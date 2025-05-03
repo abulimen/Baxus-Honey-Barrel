@@ -1,113 +1,134 @@
-# Honey Barrel Chrome Extension - BAXUS Redesign & Functional Upgrade
-
-This document outlines the UI redesign and functional enhancements implemented for the Honey Barrel Chrome Extension.
-
-## Summary of Changes:
-
-### UI Redesign (BAXUS Branding):
-
-1.  **Branding & Theme:**
-    *   Implemented the BAXUS color palette (Gold: `#C7A65B`, Teal: `#00AC9C`, Red: `#FF4B5C`, Black: `#000`, White: `#FFF`, Greys) using CSS variables.
-    *   Replaced existing colors throughout the extension (`popup.html`, `content.js` overlay) with the new BAXUS theme variables.
-
-2.  **Typography:**
-    *   Imported the "Inter" font from Google Fonts.
-    *   Updated CSS to use Inter as the primary font.
-
-3.  **Popup Redesign (`popup.html`):**
-    *   **Layout:** Redesigned for a more spacious, modern feel with increased padding and consistent spacing.
-    *   **Header:** Implemented a themed header with the "Honey Barrel" logo text styled in BAXUS Gold.
-    *   **Deal Cards (`match-item`):** Styled with rounded corners, subtle drop shadows, and clear pricing information, adhering to the BAXUS theme.
-    *   **Savings Infographic:** Enhanced the savings display (`.savings`) to show savings amount, styled with BAXUS Teal/Grey/Red.
-
-4.  **Overlay Redesign (`content.js`):**
-    *   Updated the inline styles for the comparison overlay injected by `content.js` to match the BAXUS theme.
-
-5.  **Dark/Light Mode:**
-    *   Added a toggle switch to the popup header with persistence using `localStorage`.
-    *   Implemented JavaScript logic (`popup.js`) and CSS variables for theme switching.
-
-6.  **Accessibility:**
-    *   Added `aria-label` and `title` attributes to interactive controls for better screen reader support.
-    *   Ensured reasonable color contrast in both light and dark modes.
-
-7.  **Interactive Elements & Animations:**
-    *   Enhanced button styles with hover, focus, and active states.
-    *   Added a success checkmark animation when matches are found.
-
-### Functional Enhancements:
-
-1.  **Favorites / Watchlist:**
-    *   Implemented using IndexedDB (`db.js`) to store watched items persistently.
-    *   Added a "Save" button to each match item in the popup.
-    *   Added a "Watchlist" tab to the popup (`popup.html`, `popup.js`) to display saved items.
-    *   Users can remove items from the watchlist.
-
-2.  **Price Drop Notifications:**
-    *   Added `alarms` and `notifications` permissions to `manifest.json`.
-    *   Implemented background logic (`background.js`) using Chrome Alarms to periodically check prices of watched items.
-    *   Compares current BAXUS price with the price at which the item was saved.
-    *   Uses Chrome Notifications API to alert the user of price drops.
-    *   Stores notification history in IndexedDB (`notifications` store).
-    *   Added an "Activity" tab in the popup (`popup.html`, `popup.js`) to display recent notifications (price drops, savings achieved).
-
-3.  **Smart Sorting & Caching:**
-    *   **Sorting:** Implemented logic in `popup.js` to sort displayed matches primarily by savings (highest first), then by similarity score.
-    *   **API Caching:** Implemented caching for BAXUS API responses in `background.js` using IndexedDB (`apiCache` store) to reduce redundant API calls and improve performance. Cache includes timestamps and expires after a defined period.
-    *   **Exchange Rate Caching:** Implemented caching for exchange rates in `background.js` using `chrome.storage.local` with an expiry time.
-
-4.  **Social Sharing & Gamification:**
-    *   **Sharing:** Added Twitter, Facebook, and Copy Link buttons to each match item (`popup.html`, `popup.js`) allowing users to share their finds.
-    *   **Gamification:**
-        *   Implemented a basic points system (stored in `localStorage`).
-        *   Implemented a "deal streak" counter (stored in `sessionStorage`, updated in `popup.js`) that increments when a user views a page with savings.
-        *   Added a "Profile" tab (`popup.html`, `popup.js`) to display user stats (Points, Streak) and placeholders for future badges.
-
-5.  **Cross-Site Support & Manual Search:**
-    *   Refactored `content.js` to centralize retailer site selectors and extraction logic for better maintainability.
-    *   Added a manual search input and button to the "Matches" tab in `popup.html`.
-    *   Implemented logic in `popup.js` and `background.js` to allow users to search BAXUS directly by bottle name, even when not on a supported retail site.
-
-6.  **Internationalization (i18n):**
-    *   **Currency Conversion:**
-        *   Added a currency selector dropdown (USD, EUR, GBP) to the popup header (`popup.html`).
-        *   Implemented logic in `background.js` to fetch and cache exchange rates.
-        *   Implemented logic in `popup.js` to convert and display prices (BAXUS price, savings) in the selected currency. User preference is saved in `localStorage`.
-    *   **Localization:**
-        *   Created `_locales/en/messages.json` with all user-facing strings.
-        *   Updated `manifest.json` to set `default_locale` and use `__MSG_key__` placeholders for name and description.
-        *   (Note: HTML/JS files need further updates to use `chrome.i18n.getMessage()` for full localization - *this is a remaining task*).
-
-## Files Modified/Added:
-
-*   `/Honey-Barrel/popup.html`: Major restructuring, CSS updates, added theme toggle, tabs, watchlist, notifications, profile, manual search, currency selector.
-*   `/Honey-Barrel/popup.js`: Added logic for theme toggle, tab switching, success animation, watchlist management, notification display, profile display, manual search, currency conversion, API communication, sorting, gamification, social sharing.
-*   `/Honey-Barrel/content.js`: Refactored selectors, updated overlay styles.
-*   `/Honey-Barrel/background.js`: Added logic for watchlist price checks (alarms), notifications, API caching, exchange rate fetching/caching, message handling.
-*   `/Honey-Barrel/db.js`: Added IndexedDB helper functions for watchlist, notifications, and API cache.
-*   `/Honey-Barrel/manifest.json`: Updated permissions (`storage`, `notifications`, `alarms`), added background service worker, set default locale.
-*   `/Honey-Barrel/_locales/en/messages.json`: Added localization strings.
-*   `/Honey-Barrel/README.md`: This file - updated documentation.
-
-## Assets:
-
-*   Font: Inter (via Google Fonts link in `popup.html`).
-*   Icons: SVG icons used inline.
-*   Libraries: `fuse.min.js` (for fuzzy search).
-
-## Next Steps / Potential Improvements:
-
-*   Complete localization by replacing hardcoded strings in HTML/JS with `chrome.i18n.getMessage()`.
-*   Implement badge earning logic and display.
-*   Add price history charts.
-*   Refine error handling and user feedback.
-*   Add support for more currencies and retailers.
-*   Thorough testing across different sites and scenarios.
+# Honey Barrel (BAXUS Marketplace Integration)
 
 
+## Overview
 
-## Bug Fixes (Post-Initial Functional Upgrade):
+Honey Barrel is a powerful Chrome extension designed for whisky and wine enthusiasts. It automatically scans product pages on a wide variety of retail websites – from large general marketplaces like **Amazon** to specialized drink retailers such as **The Whisky Exchange, Total Wine & More, Drizly, ReserveBar, Caskers**, and many others – identifying the bottle being viewed and cross-referencing it with the BAXUS marketplace. The extension then displays comparable listings from BAXUS directly within the popup, highlighting potential savings and providing direct links to the marketplace. It features a watchlist to track desired bottles, notifications for price drops, and a gamification system to reward user engagement.
 
-*   **Fixed `db.js` Syntax Error:** Corrected a syntax error (an extraneous closing bracket and parenthesis) in `db.js` that was preventing the script from executing correctly.
-*   **Resolved Service Worker Registration Failure:** The syntax error in `db.js` was preventing the background service worker (`background.js`) from importing it, leading to registration failure (Status code: 15). Fixing `db.js` resolved this issue.
-*   **Corrected Module Loading in Popup:** Fixed an "Uncaught SyntaxError: Unexpected token 'export'" error in the popup. This occurred because `db.js` and `popup.js` use ES6 module `import`/`export` syntax but were being loaded as regular scripts in `popup.html`. Updated `popup.html` to load both scripts with `type="module"`.
+## Youtube Video: https://youtu.be/qbL04LoJ8A4
+
+## Table of Contents
+
+*   [Key Features](#key-features)
+*   [Getting Started](#getting-started)
+    *   [Installation](#installation)
+    *   [Usage](#usage)
+*   [Screenshots](#screenshots)
+*   [Technical Overview](#technical-overview)
+*   [Permissions Explained](#permissions-explained)
+
+## Key Features
+
+Honey Barrel offers a suite of features designed to help you find the best prices for your favorite spirits and wines on the BAXUS marketplace.
+
+### Automatic Bottle Detection
+
+*   **Smart Extraction:** The extension employs multiple techniques (JSON-LD, Microdata, OpenGraph, page titles, headings, common HTML elements) to automatically identify the bottle name and price on a wide range of retail product pages, including major marketplaces and specialized liquor stores.
+*   **Robust Parsing:** It intelligently cleans and normalizes extracted names to improve matching accuracy, removing site-specific clutter and common irrelevant terms.
+*   **Currency Handling:** Detects the currency on the page and attempts to convert prices to USD for consistent comparison using an external API.
+
+### BAXUS Marketplace Integration & Price Comparison
+
+*   **Multi-Query Search:** Performs targeted searches on the BAXUS API using key terms derived from the detected bottle name.
+*   **Intelligent Matching:** Compares search results from BAXUS against the detected bottle using name similarity and shared keywords.
+*   **Relevance Sorting:** Sorts potential matches based on query relevance, name similarity, and price to present the most likely candidates first.
+*   **Savings Calculation:** Clearly displays the potential savings (or cost difference) between the retail page price and the BAXUS listing price.
+*   **Direct Links:** Provides direct links to view the matched bottles on the BAXUS website.
+*   **API Caching:** Caches BAXUS API responses locally (using IndexedDB) to improve performance and reduce redundant API calls.
+
+### Watchlist Functionality
+
+*   **Save Favorites:** Easily save interesting bottles found on BAXUS to a personal watchlist directly from the extension popup.
+*   **Persistent Storage:** Your watchlist is stored locally using IndexedDB, ensuring it persists between browser sessions.
+*   **Quick Access:** View your saved bottles, their last seen BAXUS price, and potential savings compared to their originally noted retail price within the dedicated "Watchlist" tab.
+*   **Easy Management:** Remove items from your watchlist with a single click.
+
+### Price Drop Notifications
+
+*   **Background Monitoring:** Periodically checks the prices of items in your watchlist against the BAXUS marketplace (currently planned, requires background task implementation).
+*   **Configurable Alerts:** Notifies you via Chrome notifications when a significant price drop is detected for a watched item (based on percentage or absolute value thresholds).
+*   **Direct Access:** Clicking a notification takes you directly to the relevant BAXUS listing.
+
+### Gamification System
+
+*   **Engagement Rewards:** Earn points for various actions like viewing product pages, finding matches, adding items to the watchlist, and sharing deals.
+*   **Streak Tracking:** Maintain a daily streak for finding matches to earn bonus points and unlock achievements.
+*   **Badges & Achievements:** Unlock badges for reaching milestones (e.g., adding multiple items to watchlist, finding many deals, maintaining long streaks).
+*   **Profile Overview:** Track your points, current streak, and earned badges within the "Profile" tab in the extension popup.
+
+### Manual Search
+
+*   **Search Anything:** If automatic detection fails or you want to search for a specific bottle not currently being viewed, use the manual search bar in the popup.
+*   **Direct BAXUS Query:** Directly queries the BAXUS marketplace based on your input and displays the results.
+
+### Share Deals
+
+*   **Easy Sharing:** Quickly share exciting deals found on BAXUS via Twitter or copy a pre-formatted message for Discord directly from the match card in the popup.
+*   **Gamification Integration:** Earn points for sharing deals.
+
+## Getting Started
+
+Follow these steps to install and start using the Honey Barrel extension.
+
+### Installation
+
+Since this extension is not yet published on the Chrome Web Store, you need to load it manually:
+
+1.  **Download the Extension Files:** Obtain the folder containing the extension files (including `manifest.json`, `popup.html`, etc.). If you have a `.zip` file, unzip it first.
+2.  **Open Chrome Extensions Page:** Open Google Chrome, type `chrome://extensions` in the address bar, and press Enter.
+3.  **Enable Developer Mode:** In the top-right corner of the Extensions page, toggle the "Developer mode" switch to the ON position.
+4.  **Load Unpacked Extension:** Click the "Load unpacked" button that appears (usually on the top-left).
+5.  **Select Extension Folder:** In the file dialog that opens, navigate to and select the folder containing the extension's files (the folder that has `manifest.json` inside it).
+6.  **Installation Complete:** The Honey Barrel extension icon should now appear in your Chrome toolbar, and the extension is ready to use.
+
+### Usage
+
+1.  **Browse Retail Sites:** Navigate to a product page for a whisky or wine bottle on virtually any retail website (e.g., Amazon, The Whisky Exchange, Total Wine, local liquor store sites).
+2.  **Automatic Detection:** The extension's content script will attempt to automatically detect the bottle name and price on the page.
+3.  **Open the Popup:** Click the Honey Barrel icon in your Chrome toolbar.
+4.  **View Matches:** The popup will initially show a loading state while it searches the BAXUS marketplace. If matches are found, they will be displayed in the "Search" tab, showing the BAXUS price, potential savings, and links to view the item on BAXUS.
+5.  **Use Tabs:**
+    *   **Search:** View current matches for the bottle on the page or use the manual search bar.
+    *   **Watchlist:** View and manage bottles you have saved.
+    *   **Activity:** See recent notifications (like price drops or earned badges).
+    *   **Profile:** Check your gamification points, streak, and earned badges.
+6.  **Save to Watchlist:** Click the heart icon on a match card to save it to your watchlist.
+7.  **Share Deals:** Use the Twitter or Discord buttons on a match card to share the deal.
+8.  **Manual Search:** If automatic detection doesn't work, or you want to search for something else, type a bottle name into the search bar at the top of the "Search" tab and press Enter or click the search icon.
+
+## Technical Overview
+
+Honey Barrel utilizes standard Chrome extension technologies (Manifest V3) to interact with web pages and the BAXUS marketplace.
+
+### Core Components
+
+*   **Content Script (`content.js`):** Injected into retail web pages. Responsible for detecting product information (name, price) using various DOM parsing techniques and communicating this information to the background script.
+*   **Background Service Worker (`background.js`):** Acts as the central hub. Handles communication with the BAXUS API, performs searches, manages caching, implements gamification logic (points, streaks, badges), and orchestrates communication between the content script and the popup.
+*   **Popup (`popup.html`, `popup.js`):** Provides the user interface. Displays search results, watchlist items, activity notifications, and profile/gamification stats. Handles user interactions like manual search, saving/removing watchlist items, and sharing.
+*   **Database (`db.js`):** A helper module using IndexedDB for persistent local storage of the watchlist, notifications, and API cache.
+*   **Gamification (`gamification.js`):** Contains the logic for awarding points, tracking streaks, defining badges, and managing user stats stored in `chrome.storage.local`.
+
+### Data Handling
+
+*   **IndexedDB:** Used for storing structured data locally, including the user's watchlist, notification history, and cached BAXUS API responses. This ensures data persistence and offline access for certain features.
+*   **`chrome.storage.local`:** Used for storing simpler key-value data like gamification stats (points, streak progress, earned badges) and user settings.
+
+### APIs Used
+
+*   **BAXUS API (`https://services.baxus.co/api/search/listings`):** Queried by the background script to search for bottle listings on the BAXUS marketplace.
+*   **Currency Conversion API (`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json`):** Used by the content script to fetch exchange rates for converting prices found on retail pages to USD.
+
+## Permissions Explained
+
+The extension requests the following permissions, necessary for its core functionality:
+
+*   **`activeTab`:** Allows the extension to temporarily access the currently active tab when the user invokes the extension (e.g., clicks the popup icon). Used primarily if scripting injection is needed on demand, though current implementation uses `scripting` and `host_permissions`.
+*   **`storage`:** Allows the extension to store data locally using `chrome.storage.local` (for gamification stats) and IndexedDB (via `db.js` for watchlist, notifications, cache).
+*   **`scripting`:** Allows the extension to inject the content script (`content.js`) into web pages to extract bottle information.
+*   **`webRequest`:** (Potentially needed for future features like intercepting network requests, though not strictly required for current core functionality based on examined code. May be included for broader compatibility or planned features).
+*   **`notifications`:** Allows the extension to display desktop notifications, primarily for price drop alerts on watched items.
+*   **`alarms`:** Allows the extension to schedule periodic tasks in the background, such as checking watchlist prices (used for `WATCHLIST_CHECK_ALARM_NAME`).
+*   **`contextMenus`:** Allows adding options to the right-click context menu (e.g., for initiating a manual search based on selected text - a potential feature).
+*   **`host_permissions: ["<all_urls>"]`:** Required by the `scripting` permission to allow the content script to run on potentially any retail website the user visits. Also allows background script to fetch data from the BAXUS API and the currency conversion API.
+
+
